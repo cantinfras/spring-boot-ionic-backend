@@ -16,7 +16,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -35,8 +34,7 @@ public class Cliente implements Serializable{
 	@Length(min = 5, max = 120, message = "Nome deve conter entre 5 e 120 caracteres!")
 	private String nome;
 	
-	@NotEmpty(message = "Preenchimento obrigatório!")
-	@Email(message = "Email inválido!")
+	@Column(unique = true)
 	private String email;
 
 	private String cpfOuCnpj; 
