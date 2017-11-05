@@ -8,12 +8,17 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import com.cantinfras.cursomc.domain.enuns.TipoCliente;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,8 +30,15 @@ public class Cliente implements Serializable{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
+	
+	@NotEmpty(message = "Preenchimento obrigatório!")
+	@Length(min = 5, max = 120, message = "Nome deve conter entre 5 e 120 caracteres!")
 	private String nome;
+	
+	@NotEmpty(message = "Preenchimento obrigatório!")
+	@Email(message = "Email inválido!")
 	private String email;
+
 	private String cpfOuCnpj; 
 	private Integer tipo;
 	

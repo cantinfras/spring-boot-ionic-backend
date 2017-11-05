@@ -7,5 +7,7 @@ import com.cantinfras.cursomc.domain.Cliente;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Integer>{
+	
+	
 
 }
