@@ -109,6 +109,10 @@ public class Pedido implements Serializable{
 	public void setItens(Set<ItemPedido> itens) {
 		this.itens = itens;
 	}
+	
+	
+	
+	
 
 	@Override
 	public int hashCode() {
