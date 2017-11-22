@@ -13,12 +13,15 @@ import org.springframework.stereotype.Service;
 import com.cantinfras.cursomc.domain.Cidade;
 import com.cantinfras.cursomc.domain.Cliente;
 import com.cantinfras.cursomc.domain.Endereco;
+import com.cantinfras.cursomc.domain.enuns.Perfil;
 import com.cantinfras.cursomc.domain.enuns.TipoCliente;
 import com.cantinfras.cursomc.dto.ClienteDTO;
 import com.cantinfras.cursomc.dto.ClienteNewDTO;
 import com.cantinfras.cursomc.repositories.CidadeRepository;
 import com.cantinfras.cursomc.repositories.ClienteRepository;
 import com.cantinfras.cursomc.repositories.EnderecoRepository;
+import com.cantinfras.cursomc.security.UserSS;
+import com.cantinfras.cursomc.services.exceptions.AuthorizationException;
 import com.cantinfras.cursomc.services.exceptions.DataIntegrityException;
 import com.cantinfras.cursomc.services.exceptions.ObjectNotFoundException;
 
@@ -26,7 +29,7 @@ import com.cantinfras.cursomc.services.exceptions.ObjectNotFoundException;
 public class ClienteService {
 	
 	@Autowired
-	BCryptPasswordEncoder pe;
+	private BCryptPasswordEncoder pe;
 	
 	@Autowired
 	private ClienteRepository repo;
@@ -39,14 +42,19 @@ public class ClienteService {
 	
 	public Cliente find(Integer id) {
 		
+		UserSS user = UserService.authenticated();
+		if (user==null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId())) {
+			throw new AuthorizationException("Acesso negado");
+		}
+		
 		Cliente obj = repo.findOne(id);
-		if(obj == null) {
-			throw new ObjectNotFoundException("Objeto não encontrado! Id:" + id
+		if (obj == null) {
+			throw new ObjectNotFoundException("Objeto não encontrado! Id: " + id
 					+ ", Tipo: " + Cliente.class.getName());
 		}
 		return obj;
 	}
-	
+
 	public Cliente insert(Cliente obj) {
 		obj.setId(null);
 		obj = repo.save(obj);
@@ -59,22 +67,22 @@ public class ClienteService {
 		updateData(newObj, obj);
 		return repo.save(newObj);
 	}
-	
+
 	public void delete(Integer id) {
 		find(id);
 		try {
-		repo.delete(id);
+			repo.delete(id);
 		}
 		catch (DataIntegrityViolationException e) {
-			throw new DataIntegrityException("Não é possível excluir porque há entidades relacionadas!");
+			throw new DataIntegrityException("Não é possível excluir porque há pedidos relacionados");
 		}
 	}
 	
-	public List<Cliente> findAll(){
+	public List<Cliente> findAll() {
 		return repo.findAll();
 	}
-
-	public Page<Cliente> findPage(Integer page, Integer linesPerPage, String orderBy, String direction){
+	
+	public Page<Cliente> findPage(Integer page, Integer linesPerPage, String orderBy, String direction) {
 		PageRequest pageRequest = new PageRequest(page, linesPerPage, Direction.valueOf(direction), orderBy);
 		return repo.findAll(pageRequest);
 	}
@@ -82,7 +90,7 @@ public class ClienteService {
 	public Cliente fromDTO(ClienteDTO objDto) {
 		return new Cliente(objDto.getId(), objDto.getNome(), objDto.getEmail(), null, null, null);
 	}
-	
+
 	public Cliente fromDTO(ClienteNewDTO objDto) {
 		Cliente cli = new Cliente(null, objDto.getNome(), objDto.getEmail(), objDto.getCpfOuCnpj(), TipoCliente.toEnum(objDto.getTipo()), pe.encode(objDto.getSenha()));
 		Cidade cid = cidadeRepository.findOne(objDto.getCidadeId());
@@ -92,15 +100,15 @@ public class ClienteService {
 		if (objDto.getTelefone2()!=null) {
 			cli.getTelefones().add(objDto.getTelefone2());
 		}
-		if (objDto.getTelefone2()!=null) {
+		if (objDto.getTelefone3()!=null) {
 			cli.getTelefones().add(objDto.getTelefone3());
 		}
 		return cli;
 	}
+
 	
 	private void updateData(Cliente newObj, Cliente obj) {
 		newObj.setNome(obj.getNome());
 		newObj.setEmail(obj.getEmail());
 	}
-
 }
